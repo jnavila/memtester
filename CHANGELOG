@@ -1,3 +1,13 @@
+Version 4.3.0
+9 June 2012
+  -add ability to mmap a device other than /dev/mem, enabling easier testing
+  of memory for hardware engineers et al if their system's kernel exports the 
+  memory they're interested in via /dev/mydevice or similar.  Thanks:
+  Jean-Noël Avila.
+  -add ability to run only specified tests by setting the environment
+  variable MEMTESTER_TEST_MASK to a bitmask of the indexes of the tests to be 
+  run.  Thanks: Ian Alexander.
+
 Version 4.2.2
 22 July 2011
   -add progress message for one more errno value (EAGAIN) in response to failed

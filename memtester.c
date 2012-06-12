@@ -6,13 +6,13 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2004-2010 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2004-2012 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.2.2"
+#define __version__ "4.3.0"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -22,6 +22,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <errno.h>
 
 #include "types.h"
@@ -100,7 +101,9 @@ off_t physaddrbase = 0;
 
 /* Function definitions */
 void usage(char *me) {
-    fprintf(stderr, "\nUsage: %s [-p physaddrbase] <mem>[B|K|M|G] [loops]\n", me);
+    fprintf(stderr, "\n"
+            "Usage: %s [-p physaddrbase [-d device]] <mem>[B|K|M|G] [loops]\n",
+            me);
     exit(EXIT_FAIL_NONSTARTER);
 }
 
@@ -117,17 +120,37 @@ int main(int argc, char **argv) {
     int memfd, opt, memshift;
     size_t maxbytes = -1; /* addressable memory, in bytes */
     size_t maxmb = (maxbytes >> 20) + 1; /* addressable memory, in MB */
+    /* Device to mmap memory from with -p, default is normal core */
+    char *device_name = "/dev/mem";
+    struct stat statbuf;
+    int device_specified = 0;
+    char *env_testmask = 0;
+    ul testmask = 0;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2010 Charles Cazabon.\n");
+    printf("Copyright (C) 2001-2012 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
     pagesize = memtester_pagesize();
     pagesizemask = (ptrdiff_t) ~(pagesize - 1);
     printf("pagesizemask is 0x%tx\n", pagesizemask);
+    
+    /* If MEMTESTER_TEST_MASK is set, we use its value as a mask of which
+       tests we run.
+     */
+    if (env_testmask = getenv("MEMTESTER_TEST_MASK")) {
+        errno = 0;
+        testmask = strtoul(env_testmask, 0, 0);
+        if (errno) {
+            fprintf(stderr, "error parsing MEMTESTER_TEST_MASK %s: %s\n", 
+                    env_testmask, strerror(errno));
+            usage(argv[0]); /* doesn't return */
+        }
+        printf("using testmask 0x%lx\n", testmask);
+    }
 
-    while ((opt = getopt(argc, argv, "p:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -154,11 +177,33 @@ int main(int argc, char **argv) {
                 /* okay, got address */
                 use_phys = 1;
                 break;
+            case 'd':
+                if (stat(optarg,&statbuf)) {
+                    fprintf(stderr, "can not use %s as device: %s\n", optarg, 
+                            strerror(errno));
+                    usage(argv[0]); /* doesn't return */
+                } else {
+                    if (!S_ISCHR(statbuf.st_mode)) {
+                        fprintf(stderr, "can not mmap non-char device %s\n", 
+                                optarg);
+                        usage(argv[0]); /* doesn't return */
+                    } else {
+                        device_name = optarg;
+                        device_specified = 1;
+                    }
+                }
+                break;              
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
         }
     }
 
+    if (device_specified && !use_phys) {
+        fprintf(stderr, 
+                "for mem device, physaddrbase (-p) must be specified\n");
+        usage(argv[0]); /* doesn't return */
+    }
+    
     if (optind >= argc) {
         fprintf(stderr, "need memory argument, in MB\n");
         usage(argv[0]); /* doesn't return */
@@ -226,16 +271,18 @@ int main(int argc, char **argv) {
     buf = NULL;
 
     if (use_phys) {
-        memfd = open("/dev/mem", O_RDWR | O_SYNC);
+        memfd = open(device_name, O_RDWR | O_SYNC);
         if (memfd == -1) {
-            perror("failed to open /dev/mem for physical memory");
+            fprintf(stderr, "failed to open %s for physical memory: %s\n",
+                    device_name, strerror(errno));
             exit(EXIT_FAIL_NONSTARTER);
         }
         buf = (void volatile *) mmap(0, wantbytes, PROT_READ | PROT_WRITE,
                                      MAP_SHARED | MAP_LOCKED, memfd,
                                      physaddrbase);
         if (buf == MAP_FAILED) {
-            perror("failed to mmap /dev/mem for physical memory");
+            fprintf(stderr, "failed to mmap %s for physical memory: %s\n",
+                    device_name, strerror(errno));
             exit(EXIT_FAIL_NONSTARTER);
         }
 
@@ -332,6 +379,12 @@ int main(int argc, char **argv) {
         }
         for (i=0;;i++) {
             if (!tests[i].name) break;
+            /* If using a custom testmask, only run this test if the
+               bit corresponding to this test was set by the user.
+             */
+            if (testmask && (!((1 << i) & testmask))) {
+                continue;
+            }
             printf("  %-20s: ", tests[i].name);
             if (!tests[i].fp(bufa, bufb, count)) {
                 printf("ok\n");

@@ -8,7 +8,7 @@
     Version 2 Copyright 1999 Charles Cazabon.
     Version 3 not publicly released.
     Version 4 rewrite:
-    Copyright 2004-2010 Charles Cazabon.
+    Copyright 2004-2012 Charles Cazabon.
     Licensed under the terms of the GNU General Public License version 2 (only).
     See the file COPYING for details.
 
@@ -84,8 +84,11 @@
     [runs] is an optional limit to the number of runs through all tests.
     
     An optional "-p physaddr" argument available to cause memtester to test
-    memory starting at a specific physical memory address (by mmap'ing 
-    /dev/mem starting at an offset of `physaddr`, which is given in hex).  
+    memory starting at a specific physical memory address (by mmap(2)ing 
+    a device file representing physical memory (/dev/mem by default, but can
+    be specified with the "-d device" option) starting at an offset of 
+    `physaddr`, which is given in hex).
+
     Note:  the memory specified will be overwritten during testing; you 
     therefore *cannot* specify a region belonging to the kernel or other
     applications without causing the other process or entire system to
@@ -94,9 +97,17 @@
     testing memory-mapped I/O devices and similar.  Thanks to Allon Stern
     for the idea behind this feature.  For example, if you want to test a
     bank of RAM or device which is 64kbytes in size and starts at physical
-    address 0x0C0000, you would run memtester as follows:
+    address 0x0C0000 through the normal /dev/mem, you would run memtester as 
+    follows:
     
       memtester -p 0x0c0000 64k [runs]
+    
+    If instead that device presented its memory as /dev/foodev at offset
+    0, you would run memtester instead as follows:
+    
+      memtester -p 0 -d /dev/foodev 64k [runs]
+    
+    Note that the "-d" option can only be specified in combination with "-p".
     
     memtester must run as user root so that it can lock its pages into 
     memory. If memtester fails to lock its pages, it will issue a warning and 
