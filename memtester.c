@@ -24,6 +24,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "types.h"
 #include "sizes.h"
@@ -55,6 +56,41 @@ struct test tests[] = {
 #endif
     { NULL, NULL }
 };
+
+static void * last_p =NULL;
+static int last_p_count = 0;
+
+static void sigsegv_handler (int sig, siginfo_t * info, void *v)
+{
+	printf("sigsegv handled!\n");
+	printf("sig=%d, code=%d, errno=%d, signo=%d\n", sig, info->si_code, info->si_errno, info->si_signo);
+	printf("address=%p\n", info->si_addr);
+	fflush(stdout);
+	(void) (v);
+	if (info->si_addr == last_p)
+	{
+		last_p_count++;
+		if (last_p_count == 5)
+			abort();
+	}
+	else
+	{
+		last_p = info->si_addr;
+		last_p_count = 0;
+	}
+
+}
+
+
+void install_sigsegv()
+{
+	struct sigaction sig_act;
+	int    rc;
+
+	sig_act.sa_sigaction = sigsegv_handler;
+	sig_act.sa_flags = SA_SIGINFO;
+	rc = sigaction (SIGSEGV, &sig_act, 0);
+}
 
 /* Sanity checks and portability helper macros. */
 #ifdef _SC_VERSION
@@ -132,6 +168,7 @@ int main(int argc, char **argv) {
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
+    install_sigsegv();
     pagesize = memtester_pagesize();
     pagesizemask = (ptrdiff_t) ~(pagesize - 1);
     printf("pagesizemask is 0x%tx\n", pagesizemask);
@@ -285,12 +322,13 @@ int main(int argc, char **argv) {
                     device_name, strerror(errno));
             exit(EXIT_FAIL_NONSTARTER);
         }
-
+	
         if (mlock((void *) buf, wantbytes) < 0) {
             fprintf(stderr, "failed to mlock mmap'ed space\n");
             do_mlock = 0;
         }
-
+	
+	printf("mapped to %p\n", buf);
         bufsize = wantbytes; /* accept no less */
         aligned = buf;
         done_mem = 1;

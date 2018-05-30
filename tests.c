@@ -31,27 +31,30 @@ char progress[] = "-\\|/";
 
 int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
     int r = 0;
-    size_t i;
-    ulv *p1 = bufa;
-    ulv *p2 = bufb;
+    size_t i, j;
+    ulv *p1;
+    ulv *p2;
     off_t physaddr;
-
-    for (i = 0; i < count; i++, p1++, p2++) {
-        if (*p1 != *p2) {
-            if (use_phys) {
-                physaddr = physaddrbase + (i * sizeof(ul));
-                fprintf(stderr, 
-                        "FAILURE: 0x%08lx != 0x%08lx at physical address "
-                        "0x%08lx.\n", 
-                        (ul) *p1, (ul) *p2, physaddr);
-            } else {
-                fprintf(stderr, 
-                        "FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n", 
-                        (ul) *p1, (ul) *p2, (ul) (i * sizeof(ul)));
-            }
-            /* printf("Skipping to next test..."); */
-            r = -1;
-        }
+    for (j=0; j<2; j++) {
+	    p1 = bufa;
+	    p2 = bufb;
+	    for (i = 0; i < count; i++, p1++, p2++) {
+		    if (*p1 != *p2) {
+			    if (use_phys) {
+				    physaddr = physaddrbase + (i * sizeof(ul));
+				    fprintf(stderr,
+					    "Test %d: FAILURE: 0x%08lx != 0x%08lx at physical address "
+					    "0x%08lx.\n",
+					    j+1, (ul) *p1, (ul) *p2, physaddr);
+			    } else {
+				    fprintf(stderr,
+					    "Test %d: FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n",
+					    j+1, (ul) *p1, (ul) *p2, (ul) (i * sizeof(ul)));
+			    }
+			    /* printf("Skipping to next test..."); */
+			    r = -1;
+		    }
+	    }
     }
     return r;
 }
