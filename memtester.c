@@ -102,7 +102,7 @@ off_t physaddrbase = 0;
 /* Function definitions */
 void usage(char *me) {
     fprintf(stderr, "\n"
-            "Usage: %s [-p physaddrbase [-d device]] <mem>[B|K|M|G] [loops]\n",
+            "Usage: %s [-q] [-p physaddrbase [-d device]] <mem>[B|K|M|G] [loops]\n",
             me);
     exit(EXIT_FAIL_NONSTARTER);
 }
@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
         printf("using testmask 0x%lx\n", testmask);
     }
 
-    while ((opt = getopt(argc, argv, "p:d:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:q")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -192,7 +192,10 @@ int main(int argc, char **argv) {
                         device_specified = 1;
                     }
                 }
-                break;              
+                break;
+            case 'q':
+                set_quiet(1);
+                break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
         }
