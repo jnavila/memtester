@@ -2,7 +2,7 @@
 # Makefile for memtester by Charles Cazabon.
 #
 # Copyright (C) 1999 Simon Kirby.
-# Copyright (C) 1999-2009 Charles Cazabon.
+# Copyright (C) 1999-2020 Charles Cazabon.
 # Licensed under the GNU General Public License version 2.  See the file
 # COPYING for details.
 #
@@ -25,8 +25,9 @@ INSTALLPATH	= /usr/local
 all: memtester
 
 install: all
-	mkdir -m 755 -p $(INSTALLPATH)/{bin,man/man8}
+	mkdir -m 755 -p $(INSTALLPATH)/bin
 	install -m 755 memtester $(INSTALLPATH)/bin/
+	mkdir -m 755 -p $(INSTALLPATH)/man/man8
 	gzip -c memtester.8 >memtester.8.gz ; install -m 644 memtester.8.gz $(INSTALLPATH)/man/man8/
 
 auto-ccld.sh: \

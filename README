@@ -8,7 +8,7 @@
     Version 2 Copyright 1999 Charles Cazabon.
     Version 3 not publicly released.
     Version 4 rewrite:
-    Copyright 2004-2012 Charles Cazabon.
+    Copyright 2004-2020 Charles Cazabon.
     Licensed under the terms of the GNU General Public License version 2 (only).
     See the file COPYING for details.
 
@@ -123,4 +123,19 @@
     Questions, comments, and feature requests should be
     directed to me at <charlesc-memtester@pyropus.ca>.  Read BUGS to report 
     bugs found in memtester.
+
+  Platform Compatibility Notes
+
+    As mentioned, memtester v4 was tested with a wide variety of Unix- and
+    Unix-like systems.  However, at least two issues with ancient HP/UX
+    versions have come up since.
+
+    HP/UX versions prior to v11 do not support mlock() and will fail with an
+    invalid syscall error at runtime.  If you're building on HP/UX v10.20 or
+    similar, change `int do_mlock = 1` around line 128 of memtester.c to
+    `int do_mlock = 0` and rebuild.
+    They also are missing strtoull() from C99.  To fix this build error,
+    add `#define strtoull __strtoull` to the top of memtester.c; this should
+    at least work with a GCC toolchain.
+
 

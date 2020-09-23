@@ -6,13 +6,13 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2004-2012 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2004-2020 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
  */
 
-#define __version__ "4.3.0"
+#define __version__ "4.5.0"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     ul testmask = 0;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
-    printf("Copyright (C) 2001-2012 Charles Cazabon.\n");
+    printf("Copyright (C) 2001-2020 Charles Cazabon.\n");
     printf("Licensed under the GNU General Public License version 2 (only).\n");
     printf("\n");
     check_posix_system();
@@ -359,6 +359,19 @@ int main(int argc, char **argv) {
     if (!do_mlock) fprintf(stderr, "Continuing with unlocked memory; testing "
                            "will be slower and less reliable.\n");
 
+    /* Do alighnment here as well, as some cases won't trigger above if you
+       define out the use of mlock() (cough HP/UX 10 cough). */
+    if ((size_t) buf % pagesize) {
+        /* printf("aligning to page -- was 0x%tx\n", buf); */
+        aligned = (void volatile *) ((size_t) buf & pagesizemask) + pagesize;
+        /* printf("  now 0x%tx -- lost %d bytes\n", aligned,
+         *      (size_t) aligned - (size_t) buf);
+         */
+        bufsize -= ((size_t) aligned - (size_t) buf);
+    } else {
+        aligned = buf;
+    }
+
     halflen = bufsize / 2;
     count = halflen / sizeof(ul);
     bufa = (ulv *) aligned;
@@ -392,6 +405,8 @@ int main(int argc, char **argv) {
                 exit_code |= EXIT_FAIL_OTHERTEST;
             }
             fflush(stdout);
+            /* clear buffer */
+            memset((void *) buf, 255, wantbytes);
         }
         printf("\n");
         fflush(stdout);

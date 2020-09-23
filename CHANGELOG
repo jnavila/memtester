@@ -1,3 +1,12 @@
+Version 4.5.0
+20 September 2020
+  -add note to README about problems with HP/UX prior to v.11.  Change code
+  so that buffer still gets aligned even if you comment out the use of mlock()
+  on such a platform.  Thanks: Keith Monahan.
+  -fix clear-buffer using incorrect param, causing spurious test failures.
+  Thanks: Debin Dong.
+  -fix shell-ism in Makefile.  Thanks: Fabrice Fontaine.
+
 Version 4.3.0
 9 June 2012
   -add ability to mmap a device other than /dev/mem, enabling easier testing

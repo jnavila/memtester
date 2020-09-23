@@ -4,7 +4,7 @@
  * Version 2 by Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Version 3 not publicly released.
  * Version 4 rewrite:
- * Copyright (C) 2004-2010 Charles Cazabon <charlesc-memtester@pyropus.ca>
+ * Copyright (C) 2004-2020 Charles Cazabon <charlesc-memtester@pyropus.ca>
  * Licensed under the terms of the GNU General Public License version 2 (only).
  * See the file COPYING for details.
  *
@@ -24,13 +24,3 @@ struct test {
     char *name;
     int (*fp)();
 };
-
-union {
-    unsigned char bytes[UL_LEN/8];
-    ul val;
-} mword8;
-
-union {
-    unsigned short u16s[UL_LEN/16];
-    ul val;
-} mword16;
