@@ -1,3 +1,9 @@
+Version 4.5.1
+30 May 2021
+  -documentation-only update.
+  -add note to README about build problem with Tru64, with workaround.
+  Thanks: Víctor Ostorga.
+
 Version 4.5.0
 20 September 2020
   -add note to README about problems with HP/UX prior to v.11.  Change code
@@ -23,7 +29,7 @@ Version 4.2.2
   mlock; BSDs use this to indicate the lock failed due to being over a system
   or process limit, much like ENOMEM.
 
-  Version 4.2.1
+Version 4.2.1
 3 October 2010
   -fix offsets/addresses were not being reported correctly in test failure 
   messages.  Thanks: Anton Sergeev.
