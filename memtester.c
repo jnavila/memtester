@@ -49,7 +49,7 @@ struct test tests[] = {
     { "Bit Flip", test_bitflip_comparison },
     { "Walking Ones", test_walkbits1_comparison },
     { "Walking Zeroes", test_walkbits0_comparison },
-#ifdef TEST_NARROW_WRITES    
+#ifdef TEST_NARROW_WRITES
     { "8-bit Writes", test_8bit_wide_random },
     { "16-bit Writes", test_16bit_wide_random },
 #endif
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
     pagesize = memtester_pagesize();
     pagesizemask = (ptrdiff_t) ~(pagesize - 1);
     printf("pagesizemask is 0x%tx\n", pagesizemask);
-    
+
     /* If MEMTESTER_TEST_MASK is set, we use its value as a mask of which
        tests we run.
      */
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
         errno = 0;
         testmask = strtoul(env_testmask, 0, 0);
         if (errno) {
-            fprintf(stderr, "error parsing MEMTESTER_TEST_MASK %s: %s\n", 
+            fprintf(stderr, "error parsing MEMTESTER_TEST_MASK %s: %s\n",
                     env_testmask, strerror(errno));
             usage(argv[0]); /* doesn't return */
         }
@@ -179,12 +179,12 @@ int main(int argc, char **argv) {
                 break;
             case 'd':
                 if (stat(optarg,&statbuf)) {
-                    fprintf(stderr, "can not use %s as device: %s\n", optarg, 
+                    fprintf(stderr, "can not use %s as device: %s\n", optarg,
                             strerror(errno));
                     usage(argv[0]); /* doesn't return */
                 } else {
                     if (!S_ISCHR(statbuf.st_mode)) {
-                        fprintf(stderr, "can not mmap non-char device %s\n", 
+                        fprintf(stderr, "can not mmap non-char device %s\n",
                                 optarg);
                         usage(argv[0]); /* doesn't return */
                     } else {
@@ -192,18 +192,18 @@ int main(int argc, char **argv) {
                         device_specified = 1;
                     }
                 }
-                break;              
+                break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
         }
     }
 
     if (device_specified && !use_phys) {
-        fprintf(stderr, 
+        fprintf(stderr,
                 "for mem device, physaddrbase (-p) must be specified\n");
         usage(argv[0]); /* doesn't return */
     }
-    
+
     if (optind >= argc) {
         fprintf(stderr, "need memory argument, in MB\n");
         usage(argv[0]); /* doesn't return */

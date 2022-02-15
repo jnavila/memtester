@@ -50,13 +50,13 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
         if (*p1 != *p2) {
             if (use_phys) {
                 physaddr = physaddrbase + (i * sizeof(ul));
-                fprintf(stderr, 
+                fprintf(stderr,
                         "FAILURE: 0x%08lx != 0x%08lx at physical address "
-                        "0x%08lx.\n", 
+                        "0x%08lx.\n",
                         (ul) *p1, (ul) *p2, physaddr);
             } else {
-                fprintf(stderr, 
-                        "FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n", 
+                fprintf(stderr,
+                        "FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx.\n",
                         (ul) *p1, (ul) *p2, (ul) (i * sizeof(ul)));
             }
             /* printf("Skipping to next test..."); */
@@ -91,14 +91,14 @@ int test_stuck_address(ulv *bufa, size_t count) {
             if (*p1 != (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1))) {
                 if (use_phys) {
                     physaddr = physaddrbase + (i * sizeof(ul));
-                    fprintf(stderr, 
+                    fprintf(stderr,
                             "FAILURE: possible bad address line at physical "
-                            "address 0x%08lx.\n", 
+                            "address 0x%08lx.\n",
                             physaddr);
                 } else {
-                    fprintf(stderr, 
+                    fprintf(stderr,
                             "FAILURE: possible bad address line at offset "
-                            "0x%08lx.\n", 
+                            "0x%08lx.\n",
                             (ul) (i * sizeof(ul)));
                 }
                 printf("Skipping to next test...\n");
@@ -456,7 +456,7 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
     return 0;
 }
 
-#ifdef TEST_NARROW_WRITES    
+#ifdef TEST_NARROW_WRITES
 int test_8bit_wide_random(ulv* bufa, ulv* bufb, size_t count) {
     u8v *p1, *t;
     ulv *p2;

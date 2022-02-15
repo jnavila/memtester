@@ -34,5 +34,3 @@
 #else
     #error long on this platform is not 32 or 64 bits
 #endif
-
-
