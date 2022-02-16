@@ -28,6 +28,7 @@
 #include "types.h"
 #include "sizes.h"
 #include "tests.h"
+#include "output.h"
 
 #define EXIT_FAIL_NONSTARTER    0x01
 #define EXIT_FAIL_ADDRESSLINES  0x02
@@ -126,6 +127,8 @@ int main(int argc, char **argv) {
     int device_specified = 0;
     char *env_testmask = 0;
     ul testmask = 0;
+
+    out_initialize();
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
     printf("Copyright (C) 2001-2020 Charles Cazabon.\n");
@@ -399,6 +402,7 @@ int main(int argc, char **argv) {
                 continue;
             }
             printf("  %-20s: ", tests[i].name);
+            fflush(stdout);
             if (!tests[i].fp(bufa, bufb, count)) {
                 printf("ok\n");
             } else {
