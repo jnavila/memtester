@@ -102,7 +102,7 @@ off_t physaddrbase = 0;
 /* Function definitions */
 void usage(char *me) {
     fprintf(stderr, "\n"
-            "Usage: %s [-p physaddrbase [-d device]] <mem>[B|K|M|G] [loops]\n",
+            "Usage: %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
             me);
     exit(EXIT_FAIL_NONSTARTER);
 }
@@ -126,6 +126,7 @@ int main(int argc, char **argv) {
     int device_specified = 0;
     char *env_testmask = 0;
     ul testmask = 0;
+    int o_flags = O_RDWR | O_SYNC;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
     printf("Copyright (C) 2001-2020 Charles Cazabon.\n");
@@ -150,7 +151,7 @@ int main(int argc, char **argv) {
         printf("using testmask 0x%lx\n", testmask);
     }
 
-    while ((opt = getopt(argc, argv, "p:d:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:u")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -193,6 +194,9 @@ int main(int argc, char **argv) {
                     }
                 }
                 break;              
+            case 'u':
+		o_flags &= ~O_SYNC;
+		break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
         }
@@ -271,7 +275,7 @@ int main(int argc, char **argv) {
     buf = NULL;
 
     if (use_phys) {
-        memfd = open(device_name, O_RDWR | O_SYNC);
+        memfd = open(device_name, o_flags);
         if (memfd == -1) {
             fprintf(stderr, "failed to open %s for physical memory: %s\n",
                     device_name, strerror(errno));
