@@ -8,7 +8,7 @@
 #ifndef _OUTPUT_H_
 #define _OUTPUT_H_
 
-void out_initialize();
+void out_initialize(int);
 
 void out_test_start();
 void out_test_setting();

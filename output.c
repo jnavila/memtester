@@ -17,9 +17,9 @@
 static int show_progress = 1;
 static int wheel_pos;
 
-void out_initialize()
+void out_initialize(int quiet)
 {
-    show_progress = isatty(STDOUT_FILENO);
+    show_progress = isatty(STDOUT_FILENO) && !quiet;
 }
 
 void out_test_start()

@@ -103,7 +103,7 @@ off_t physaddrbase = 0;
 /* Function definitions */
 void usage(char *me) {
     fprintf(stderr, "\n"
-            "Usage: %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
+            "Usage: %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops] [-q]\n",
             me);
     exit(EXIT_FAIL_NONSTARTER);
 }
@@ -128,8 +128,7 @@ int main(int argc, char **argv) {
     char *env_testmask = 0;
     ul testmask = 0;
     int o_flags = O_RDWR | O_SYNC;
-
-    out_initialize();
+    int quiet = 0;
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
     printf("Copyright (C) 2001-2020 Charles Cazabon.\n");
@@ -154,7 +153,7 @@ int main(int argc, char **argv) {
         printf("using testmask 0x%lx\n", testmask);
     }
 
-    while ((opt = getopt(argc, argv, "p:d:u")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:q:u")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -197,6 +196,9 @@ int main(int argc, char **argv) {
                     }
                 }
                 break;
+	    case 'q':
+		quiet = 1;
+		break;
             case 'u':
 		o_flags &= ~O_SYNC;
 		break;
@@ -204,6 +206,7 @@ int main(int argc, char **argv) {
                 usage(argv[0]); /* doesn't return */
         }
     }
+    out_initialize(quiet);
 
     if (device_specified && !use_phys) {
         fprintf(stderr,
