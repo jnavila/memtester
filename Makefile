@@ -13,7 +13,7 @@
 CC			= $(shell head -n 1 conf-cc)
 LD			= $(shell head -n 1 conf-ld)
 
-SOURCES		= memtester.c tests.c
+SOURCES		= memtester.c tests.c output.c
 OBJECTS		= $(SOURCES:.c=.o)
 HEADERS		= memtester.h
 TARGETS     = *.o compile load auto-ccld.sh find-systype make-compile make-load systype extra-libs
@@ -76,7 +76,7 @@ clean:
 
 memtester: \
 $(OBJECTS) memtester.c tests.h tests.c tests.h conf-cc Makefile load extra-libs
-	./load memtester tests.o `cat extra-libs`
+	./load memtester tests.o output.o `cat extra-libs`
 
 memtester.o: memtester.c tests.h conf-cc Makefile compile
 	./compile memtester.c
