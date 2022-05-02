@@ -64,7 +64,7 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
     return r;
 }
 
-int test_stuck_address(ulv *bufa, size_t count) {
+int test_stuck_address(ulv *bufa, ulv *bufb, size_t count) {
     ulv *p1 = bufa;
     unsigned int j;
     size_t i;

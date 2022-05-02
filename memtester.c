@@ -35,6 +35,7 @@
 #define EXIT_FAIL_OTHERTEST     0x04
 
 struct test tests[] = {
+    { "Stuck Address", test_stuck_address },
     { "Random Value", test_random_value },
     { "Compare XOR", test_xor_comparison },
     { "Compare SUB", test_sub_comparison },
@@ -103,7 +104,7 @@ off_t physaddrbase = 0;
 /* Function definitions */
 void usage(char *me) {
     fprintf(stderr, "\n"
-            "Usage: %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
+            "Usage: [MEMTESTER_TEST_MASK=0x<mask>] %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
             me);
     exit(EXIT_FAIL_NONSTARTER);
 }
@@ -390,13 +391,6 @@ int main(int argc, char **argv) {
             printf("/%lu", loops);
         }
         printf(":\n");
-        printf("  %-20s: ", "Stuck Address");
-        fflush(stdout);
-        if (!test_stuck_address(aligned, bufsize / sizeof(ul))) {
-             printf("ok\n");
-        } else {
-            exit_code |= EXIT_FAIL_ADDRESSLINES;
-        }
         for (i=0;;i++) {
             if (!tests[i].name) break;
             /* If using a custom testmask, only run this test if the
