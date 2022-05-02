@@ -110,7 +110,7 @@ void usage(char *me) {
 }
 
 int main(int argc, char **argv) {
-    ul loops, loop, i;
+    ul loops, loop, i, errorcnt = 0;
     size_t pagesize, wantraw, wantmb, wantbytes, wantbytes_orig, bufsize,
          halflen, count;
     char *memsuffix, *addrsuffix, *loopsuffix;
@@ -199,8 +199,8 @@ int main(int argc, char **argv) {
                 }
                 break;
             case 'u':
-		o_flags &= ~O_SYNC;
-		break;
+                o_flags &= ~O_SYNC;
+                break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
         }
@@ -386,7 +386,8 @@ int main(int argc, char **argv) {
     bufb = (ulv *) ((size_t) aligned + halflen);
 
     for(loop=1; ((!loops) || loop <= loops); loop++) {
-        printf("Loop %lu", loop);
+        printf("Loop %lu\n", loop);
+        printf("total errors = %lu", errorcnt);
         if (loops) {
             printf("/%lu", loops);
         }
@@ -405,6 +406,7 @@ int main(int argc, char **argv) {
                 printf("ok\n");
             } else {
                 exit_code |= EXIT_FAIL_OTHERTEST;
+                errorcnt++;
             }
             fflush(stdout);
             /* clear buffer */
