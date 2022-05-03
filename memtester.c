@@ -35,6 +35,7 @@
 #define EXIT_FAIL_OTHERTEST     0x04
 
 struct test tests[] = {
+    { "Stuck Address", test_stuck_address },
     { "Random Value", test_random_value },
     { "Compare XOR", test_xor_comparison },
     { "Compare SUB", test_sub_comparison },
@@ -103,13 +104,13 @@ off_t physaddrbase = 0;
 /* Function definitions */
 void usage(char *me) {
     fprintf(stderr, "\n"
-            "Usage: %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
+            "Usage: [MEMTESTER_TEST_MASK=0x<mask>] %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
             me);
     exit(EXIT_FAIL_NONSTARTER);
 }
 
 int main(int argc, char **argv) {
-    ul loops, loop, i;
+    ul loops, loop, i, errorcnt = 0;
     size_t pagesize, wantraw, wantmb, wantbytes, wantbytes_orig, bufsize,
          halflen, count;
     char *memsuffix, *addrsuffix, *loopsuffix;
@@ -198,8 +199,8 @@ int main(int argc, char **argv) {
                 }
                 break;
             case 'u':
-		o_flags &= ~O_SYNC;
-		break;
+                o_flags &= ~O_SYNC;
+                break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
         }
@@ -390,13 +391,7 @@ int main(int argc, char **argv) {
             printf("/%lu", loops);
         }
         printf(":\n");
-        printf("  %-20s: ", "Stuck Address");
-        fflush(stdout);
-        if (!test_stuck_address(aligned, bufsize / sizeof(ul))) {
-             printf("ok\n");
-        } else {
-            exit_code |= EXIT_FAIL_ADDRESSLINES;
-        }
+        printf("total errors = %lu\n", errorcnt);
         for (i=0;;i++) {
             if (!tests[i].name) break;
             /* If using a custom testmask, only run this test if the
@@ -411,6 +406,7 @@ int main(int argc, char **argv) {
                 printf("ok\n");
             } else {
                 exit_code |= EXIT_FAIL_OTHERTEST;
+                errorcnt++;
             }
             fflush(stdout);
             /* clear buffer */
