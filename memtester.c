@@ -386,12 +386,12 @@ int main(int argc, char **argv) {
     bufb = (ulv *) ((size_t) aligned + halflen);
 
     for(loop=1; ((!loops) || loop <= loops); loop++) {
-        printf("Loop %lu\n", loop);
-        printf("total errors = %lu", errorcnt);
+        printf("Loop %lu", loop);
         if (loops) {
             printf("/%lu", loops);
         }
         printf(":\n");
+        printf("total errors = %lu\n", errorcnt);
         for (i=0;;i++) {
             if (!tests[i].name) break;
             /* If using a custom testmask, only run this test if the
