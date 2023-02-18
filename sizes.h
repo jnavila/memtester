@@ -17,6 +17,7 @@
 #define rand32() ((unsigned int) rand() | ( (unsigned int) rand() << 16))
 
 #if (ULONG_MAX == 4294967295UL)
+    #define FMT_TARGET "0x%08lx"
     #define rand_ul() rand32()
     #define UL_ONEBITS 0xffffffff
     #define UL_LEN 32
@@ -24,6 +25,7 @@
     #define CHECKERBOARD2 0xaaaaaaaa
     #define UL_BYTE(x) ((x | x << 8 | x << 16 | x << 24))
 #elif (ULONG_MAX == 18446744073709551615ULL)
+    #define FMT_TARGET "0x%016lx"
     #define rand64() (((ul) rand32()) << 32 | ((ul) rand32()))
     #define rand_ul() rand64()
     #define UL_ONEBITS 0xffffffffffffffffUL

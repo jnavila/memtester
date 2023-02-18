@@ -1,3 +1,12 @@
 cc -O2 -DPOSIX -D_POSIX_C_SOURCE=200809L -D_FILE_OFFSET_BITS=64 -DTEST_NARROW_WRITES -c
 
 This will be used to compile .c files.
+
+If you use GCC 12, it emits a warning for something which is correct code.
+The warning message looks like an error:
+
+    memtester.c:142:9: error: suggest parentheses around assignment used as
+        truth value [-Werror=parentheses]
+
+You can ignore the warning message; the code is correct.  If the warning message
+bothers you, you can add `-Wno-parentheses` to the options above.

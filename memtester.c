@@ -12,7 +12,7 @@
  *
  */
 
-#define __version__ "4.5.1"
+#define __version__ "4.6.0"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 
 #include "types.h"
@@ -371,6 +372,14 @@ int main(int argc, char **argv) {
     } else {
         aligned = buf;
     }
+
+    /* In theory, you might be able to get slightly better error detection if you randomly seed
+       the pseudo-random number generator and run memtester multiple times in sequence.
+       However, that benefit is probably very, very slight and won't matter.  Leaving it unseeded
+       results in a constant seed, so exactly the same values are used test-to-test, giving
+       better reproducibility, so this is disabled by default.  You can uncomment it to enable.
+       Note there are no security implications here */
+    /* srand(time(0)); */
 
     halflen = bufsize / 2;
     count = halflen / sizeof(ul);

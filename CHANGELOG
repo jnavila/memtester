@@ -1,3 +1,12 @@
+Version 4.6.0
+19 December 2022
+  -fix warning on signedness of the ONE constant.  Thanks: Marek Vasut.
+  -add note to conf-cc about how to silence gcc's incorrect warning
+  "suggest parentheses around assignment".  Thanks: Marek Vasut.
+  -fix overflow in output for reported address.  Thanks: Marek Vasut.
+  -add note about randomizing values used at runtime by seeding PRNG.
+  Disabled by default for reproducibility.
+
 Version 4.5.1
 30 May 2021
   -documentation-only update.
