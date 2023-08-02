@@ -103,7 +103,7 @@ off_t physaddrbase = 0;
 /* Function definitions */
 void usage(char *me) {
     fprintf(stderr, "\n"
-            "Usage: %s [-p physaddrbase [-d device] [-u]] <mem>[B|K|M|G] [loops]\n",
+            "Usage: %s [-p physaddrbase [-d device] [-t num_threads] [-u]] <mem>[B|K|M|G] [loops]\n",
             me);
     exit(EXIT_FAIL_NONSTARTER);
 }
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     char *env_testmask = 0;
     ul testmask = 0;
     int o_flags = O_RDWR | O_SYNC;
-
+    int num_threads = 1;
     out_initialize();
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
         printf("using testmask 0x%lx\n", testmask);
     }
 
-    while ((opt = getopt(argc, argv, "p:d:u")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:t:u")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -199,6 +199,12 @@ int main(int argc, char **argv) {
                 break;
             case 'u':
 		o_flags &= ~O_SYNC;
+		break;
+	    case 't':
+	        num_threads = atoi(optarg);
+		if (num_threads > 1) {
+			disable_progress();
+		}
 		break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
@@ -274,7 +280,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    printf("want %lluMB (%llu bytes)\n", (ull) wantmb, (ull) wantbytes);
+    printf("want %lluMB (%llu bytes)\n Running in %d Threads\n", (ull) wantmb, (ull) wantbytes, num_threads);
     buf = NULL;
 
     if (use_phys) {
@@ -383,6 +389,9 @@ int main(int argc, char **argv) {
     count = halflen / sizeof(ul);
     bufa = (ulv *) aligned;
     bufb = (ulv *) ((size_t) aligned + halflen);
+    if(count % num_threads != 0) {
+    	printf("Warning: thread number not ideal: %ld %% %d != 0, some unit will not be covered!\n", count, num_threads);
+    }
 
     for(loop=1; ((!loops) || loop <= loops); loop++) {
         printf("Loop %lu", loop);
@@ -392,7 +401,7 @@ int main(int argc, char **argv) {
         printf(":\n");
         printf("  %-20s: ", "Stuck Address");
         fflush(stdout);
-        if (!test_stuck_address(aligned, bufsize / sizeof(ul))) {
+        if (num_threads > 1 ?!test_stuck_address_mt(aligned, bufsize / sizeof(ul), num_threads): !test_stuck_address(aligned, bufsize / sizeof(ul))) {
              printf("ok\n");
         } else {
             exit_code |= EXIT_FAIL_ADDRESSLINES;
@@ -407,7 +416,7 @@ int main(int argc, char **argv) {
             }
             printf("  %-20s: ", tests[i].name);
             fflush(stdout);
-            if (!tests[i].fp(bufa, bufb, count)) {
+            if (num_threads > 1 ? !run_test_mt(tests[i].fp, bufa, bufb, count, num_threads): !tests[i].fp(bufa, bufb, count)) {
                 printf("ok\n");
             } else {
                 exit_code |= EXIT_FAIL_OTHERTEST;

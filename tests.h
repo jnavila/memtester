@@ -17,6 +17,8 @@
 /* Function declaration. */
 
 int test_stuck_address(unsigned long volatile *bufa, size_t count);
+int test_stuck_address_mt(unsigned long volatile *bufa, size_t count, int num_threads);
+
 int test_random_value(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_xor_comparison(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_sub_comparison(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
@@ -36,3 +38,5 @@ int test_bitflip_comparison(unsigned long volatile *bufa, unsigned long volatile
 int test_8bit_wide_random(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_16bit_wide_random(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 #endif
+typedef int (*test_func)(unsigned long volatile *, unsigned long volatile *, size_t);
+int run_test_mt(test_func fp, ulv *bufa, ulv *bufb, size_t count, int num_threads);

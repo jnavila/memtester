@@ -17,11 +17,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <pthread.h>
 
 #include "types.h"
 #include "sizes.h"
 #include "memtester.h"
 #include "output.h"
+#include "tests.h"
 
 #define ONE 0x00000001L
 
@@ -101,6 +103,73 @@ int test_stuck_address(ulv *bufa, size_t count) {
         }
     }
     out_test_end();
+    return 0;
+}
+struct test_stuck_address_args {
+    unsigned long volatile *bufa;
+    size_t count;
+    int* result;
+};
+void* run_test_stuck_address_write_result(void *args) {
+    struct test_stuck_address_args *p = (struct test_stuck_address_args *)args;
+    *(p->result) = test_stuck_address(p->bufa, p->count);
+}
+int test_stuck_address_mt(unsigned long volatile *bufa, size_t count, int num_threads) {
+    int result[1024];
+    pthread_t thread_id[1024];
+    size_t count_per_threads = count / num_threads;
+    struct test_stuck_address_args args[1024];
+    for(int i = 0; i < num_threads; i ++) {
+        args[i].bufa = bufa + count_per_threads * i;
+        args[i].count = count_per_threads;
+        args[i].result = &result[i];
+        pthread_create(&thread_id[i], NULL, &run_test_stuck_address_write_result, &args[i]);
+    }
+
+    for(int i = 0; i < num_threads; i ++) {
+        pthread_join(thread_id[i], NULL);
+    }
+    for (int i = 0; i < num_threads; i ++) {
+        if (result[i] != 0) {
+            return result[i];
+        }
+    }
+    return 0;
+}
+
+struct test_thread_args {
+    test_func fp;
+    unsigned long volatile *bufa;
+    unsigned long volatile *bufb;
+    size_t count;
+    int* result;
+};
+void* run_test_write_result(void *args) {
+    struct test_thread_args *p = (struct test_stuck_address_args *)args;
+    *(p->result) = (p->fp)(p->bufa, p->bufb, p->count);
+}
+int run_test_mt(test_func fp, ulv *bufa, ulv *bufb, size_t count, int num_threads) {
+    int result[1024];
+    pthread_t thread_id[1024];
+    size_t count_per_threads = count / num_threads;
+    struct test_thread_args args[1024];
+    for(int i = 0; i < num_threads; i ++) {
+        args[i].fp = fp;
+        args[i].bufa = bufa + count_per_threads * i;
+        args[i].bufb = bufb + count_per_threads * i;
+        args[i].count = count_per_threads;
+        args[i].result = &result[i];
+        pthread_create(&thread_id[i], NULL, &run_test_write_result, &args[i]);
+    }
+
+    for(int i = 0; i < num_threads; i ++) {
+        pthread_join(thread_id[i], NULL);
+    }
+    for (int i = 0; i < num_threads; i ++) {
+        if (result[i] != 0) {
+            return result[i];
+        }
+    }
     return 0;
 }
 

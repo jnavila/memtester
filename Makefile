@@ -76,7 +76,7 @@ clean:
 
 memtester: \
 $(OBJECTS) memtester.c tests.h tests.c tests.h conf-cc Makefile load extra-libs
-	./load memtester tests.o output.o `cat extra-libs`
+	./load memtester tests.o output.o `cat extra-libs` -lpthread
 
 memtester.o: memtester.c tests.h conf-cc Makefile compile
 	./compile memtester.c
