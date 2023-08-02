@@ -14,6 +14,7 @@ void out_test_start();
 void out_test_setting();
 void out_test_testing();
 void out_test_end();
+void disable_progress();
 
 void out_wheel_start();
 void out_wheel_advance();

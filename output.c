@@ -22,6 +22,10 @@ void out_initialize()
     show_progress = isatty(STDOUT_FILENO);
 }
 
+void disable_progress() {
+    show_progress = 0;
+}
+
 void out_test_start()
 {
     if (show_progress) {
