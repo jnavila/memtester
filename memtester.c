@@ -129,6 +129,7 @@ int main(int argc, char **argv) {
     ul testmask = 0;
     int o_flags = O_RDWR | O_SYNC;
     int num_threads = 1;
+    int stuck_address_only = 0;
     out_initialize();
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
@@ -154,7 +155,7 @@ int main(int argc, char **argv) {
         printf("using testmask 0x%lx\n", testmask);
     }
 
-    while ((opt = getopt(argc, argv, "p:d:t:u")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:t:us")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -198,17 +199,20 @@ int main(int argc, char **argv) {
                 }
                 break;
             case 'u':
-		o_flags &= ~O_SYNC;
-		break;
-	    case 't':
-	        num_threads = atoi(optarg);
-		if (num_threads > 1) {
-			disable_progress();
-		}
-		break;
+                o_flags &= ~O_SYNC;
+                break;
+            case 't':
+                num_threads = atoi(optarg);
+                if (num_threads > 1) {
+                    disable_progress();
+                }
+                break;
+            case 's':
+                stuck_address_only = 1;
+                break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
-        }
+            }
     }
 
     if (device_specified && !use_phys) {
@@ -406,24 +410,26 @@ int main(int argc, char **argv) {
         } else {
             exit_code |= EXIT_FAIL_ADDRESSLINES;
         }
-        for (i=0;;i++) {
-            if (!tests[i].name) break;
-            /* If using a custom testmask, only run this test if the
-               bit corresponding to this test was set by the user.
-             */
-            if (testmask && (!((1 << i) & testmask))) {
-                continue;
+        if (!stuck_address_only) {
+            for (i=0;;i++) {
+                if (!tests[i].name) break;
+                /* If using a custom testmask, only run this test if the
+                bit corresponding to this test was set by the user.
+                */
+                if (testmask && (!((1 << i) & testmask))) {
+                    continue;
+                }
+                printf("  %-20s: ", tests[i].name);
+                fflush(stdout);
+                if (num_threads > 1 ? !run_test_mt(tests[i].fp, bufa, bufb, count, num_threads): !tests[i].fp(bufa, bufb, count)) {
+                    printf("ok\n");
+                } else {
+                    exit_code |= EXIT_FAIL_OTHERTEST;
+                }
+                fflush(stdout);
+                /* clear buffer */
+                memset((void *) buf, 255, wantbytes);
             }
-            printf("  %-20s: ", tests[i].name);
-            fflush(stdout);
-            if (num_threads > 1 ? !run_test_mt(tests[i].fp, bufa, bufb, count, num_threads): !tests[i].fp(bufa, bufb, count)) {
-                printf("ok\n");
-            } else {
-                exit_code |= EXIT_FAIL_OTHERTEST;
-            }
-            fflush(stdout);
-            /* clear buffer */
-            memset((void *) buf, 255, wantbytes);
         }
         printf("\n");
         fflush(stdout);
