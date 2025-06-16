@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
         printf("using testmask 0x%lx\n", testmask);
     }
 
-    while ((opt = getopt(argc, argv, "p:d:q:u")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:qu")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
